@@ -48,9 +48,9 @@ export async function generateColorPalette({ input, style, darkMode, format }: {
 
   if (format === "css" || format === "all") {
     const primitiveCss = tokensToCSS(primitiveTokens);
-    const semanticLightCss = tokensToCSS(semanticLight as Record<string, string>);
+    const semanticLightCss = tokensToCSS(semanticLight as unknown as Record<string, string>);
     const semanticDarkCss = semanticDark
-      ? tokensToCSS(semanticDark as Record<string, string>, "", "[data-theme='dark'], .dark")
+      ? tokensToCSS(semanticDark as unknown as Record<string, string>, "", "[data-theme='dark'], .dark")
       : "";
     sections.push("## CSS Custom Properties\n\n```css\n" + primitiveCss + "\n\n" + semanticLightCss + (semanticDarkCss ? "\n\n" + semanticDarkCss : "") + "\n```");
   }
@@ -195,6 +195,31 @@ export async function generateComponentTokens({ components, brandColor, format }
       "alert-bg-error": "#fef2f2", "alert-border-error": "#fecaca", "alert-text-error": "#991b1b",
       "alert-radius": "0.5rem",
     },
+    tooltip: {
+      "tooltip-bg": "#0f172a", "tooltip-text": "#f8fafc",
+      "tooltip-radius": "0.25rem", "tooltip-padding-x": "0.625rem",
+    },
+    navigation: {
+      "nav-bg": "#ffffff", "nav-border": "#e2e8f0",
+      "nav-item-text": "#475569", "nav-item-text-active": scale[700],
+      "nav-item-bg-active": scale[50],
+    },
+    table: {
+      "table-header-bg": "#f8fafc", "table-header-text": "#475569",
+      "table-row-bg": "#ffffff", "table-border": "#e2e8f0",
+    },
+    form: {
+      "form-label-text": "#374151", "form-label-font-weight": "500",
+      "form-hint-text": "#6b7280", "form-error-text": "#dc2626",
+    },
+    avatar: {
+      "avatar-bg": scale[100], "avatar-text": scale[700],
+      "avatar-size-md": "2.5rem", "avatar-size-lg": "3rem",
+    },
+    chip: {
+      "chip-bg": "#f1f5f9", "chip-bg-selected": scale[100],
+      "chip-text": "#475569", "chip-radius": "9999px",
+    },
   };
   const selected: Record<string, string> = {};
   for (const comp of components) {
@@ -249,7 +274,7 @@ export async function exportTokens({ tokens, targetFormat, prefix }: {
     case "tailwind-v4": return "```css\n@theme {\n" + Object.entries(flat).map(([k, v]) => `  --${pre}${k}: ${v};`).join("\n") + "\n}\n```";
     case "swift": {
       const entries = Object.entries(flat).filter(([, v]) => String(v).startsWith("#"))
-        .map(([k, v]) => `  static let ${k.replace(/-([a-z])/g, (_, c) => c.toUpperCase())} = Color(hex: "${v}")`).join("\n");
+        .map(([k, v]) => `  static let ${k.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase())} = Color(hex: "${v}")`).join("\n");
       return "```swift\nextension Color {\n" + entries + "\n}\n```";
     }
     default: return "```json\n" + JSON.stringify(flat, null, 2) + "\n```";
@@ -275,7 +300,7 @@ export async function analyzeBrandURL({ url, outputFormat }: {
   url: string; outputFormat: string;
 }): Promise<string> {
   const domain = new URL(url).hostname.replace("www.", "");
-  return `## Brand Analysis: ${domain}\n\nLive URL analysis requires browser access. Deploy with --browser flag or use the hosted version.\n\n### Manual Workaround\n1. Open ${url} in DevTools\n2. Note primary colors and fonts\n3. Use generate_color_palette with those values`;
+  return `## Brand Analysis: ${domain}\n\nLive URL analysis requires browser access.\n\n### Manual Workaround\n1. Open ${url} in DevTools\n2. Note primary colors and fonts\n3. Use generate_color_palette with those values`;
 }
 
 // ── Theme Generator ────────────────────────────────────────
