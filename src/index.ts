@@ -11,17 +11,19 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-import { generateColorPalette } from "./tools/colorPalette.js";
-import { generateDesignTokens } from "./tools/designTokens.js";
-import { analyzeBrandURL } from "./tools/brandAnalyzer.js";
-import { generateTypographySystem } from "./tools/typography.js";
-import { generateShadowSystem } from "./tools/shadows.js";
-import { generateSpacingScale } from "./tools/spacing.js";
-import { generateComponentTokens } from "./tools/componentTokens.js";
-import { exportTokens } from "./tools/exportTokens.js";
-import { checkAccessibility } from "./tools/accessibility.js";
-import { generateTheme } from "./tools/themeGenerator.js";
-import { SERVER_INFO, TOOL_ANNOTATIONS } from "./lib/constants.js";
+import {
+  generateColorPalette,
+  generateDesignTokens,
+  analyzeBrandURL,
+  generateTypographySystem,
+  generateShadowSystem,
+  generateSpacingScale,
+  generateComponentTokens,
+  exportTokens,
+  checkAccessibility,
+  generateTheme,
+} from "./tools/allTools.js";
+import { SERVER_INFO } from "./lib/constants.js";
 import { logger } from "./lib/logger.js";
 
 // ─── Server Bootstrap ─────────────────────────────────────────────────────────
@@ -54,10 +56,9 @@ server.tool(
     logger.info({ tool: "generate_color_palette", input, style });
     const result = await generateColorPalette({ input, style, darkMode, format });
     return {
-      content: [{ type: "text", text: result }],
+      content: [{ type: "text" as const, text: result }],
     };
-  },
-  TOOL_ANNOTATIONS.readOnly
+  }
 );
 
 // ─── Tool: Generate Full Design Token System ──────────────────────────────────
@@ -79,10 +80,9 @@ server.tool(
     logger.info({ tool: "generate_design_tokens", brandColor, brandName });
     const result = await generateDesignTokens({ brandColor, brandName, secondaryColor, personality, includeMotion, format });
     return {
-      content: [{ type: "text", text: result }],
+      content: [{ type: "text" as const, text: result }],
     };
-  },
-  TOOL_ANNOTATIONS.readOnly
+  }
 );
 
 // ─── Tool: Analyze Brand from URL ─────────────────────────────────────────────
@@ -100,10 +100,9 @@ server.tool(
     logger.info({ tool: "analyze_brand_url", url });
     const result = await analyzeBrandURL({ url, outputFormat });
     return {
-      content: [{ type: "text", text: result }],
+      content: [{ type: "text" as const, text: result }],
     };
-  },
-  TOOL_ANNOTATIONS.readOnly
+  }
 );
 
 // ─── Tool: Generate Typography System ─────────────────────────────────────────
@@ -126,10 +125,9 @@ server.tool(
     logger.info({ tool: "generate_typography_system", personality });
     const result = await generateTypographySystem({ personality, baseSize, scaleRatio, brandName, format });
     return {
-      content: [{ type: "text", text: result }],
+      content: [{ type: "text" as const, text: result }],
     };
-  },
-  TOOL_ANNOTATIONS.readOnly
+  }
 );
 
 // ─── Tool: Generate Shadow System ─────────────────────────────────────────────
@@ -149,10 +147,9 @@ server.tool(
     logger.info({ tool: "generate_shadow_system", mode, style });
     const result = await generateShadowSystem({ mode, style, brandColor, format });
     return {
-      content: [{ type: "text", text: result }],
+      content: [{ type: "text" as const, text: result }],
     };
-  },
-  TOOL_ANNOTATIONS.readOnly
+  }
 );
 
 // ─── Tool: Generate Spacing Scale ─────────────────────────────────────────────
@@ -172,10 +169,9 @@ server.tool(
     logger.info({ tool: "generate_spacing_scale", baseUnit });
     const result = await generateSpacingScale({ baseUnit, steps, naming, format });
     return {
-      content: [{ type: "text", text: result }],
+      content: [{ type: "text" as const, text: result }],
     };
-  },
-  TOOL_ANNOTATIONS.readOnly
+  }
 );
 
 // ─── Tool: Generate Component Tokens ──────────────────────────────────────────
@@ -195,10 +191,9 @@ server.tool(
     logger.info({ tool: "generate_component_tokens", components });
     const result = await generateComponentTokens({ components, brandColor, format });
     return {
-      content: [{ type: "text", text: result }],
+      content: [{ type: "text" as const, text: result }],
     };
-  },
-  TOOL_ANNOTATIONS.readOnly
+  }
 );
 
 // ─── Tool: Check Accessibility ────────────────────────────────────────────────
@@ -219,10 +214,9 @@ server.tool(
     logger.info({ tool: "check_accessibility", pairCount: pairs.length });
     const result = await checkAccessibility({ pairs, level, suggestFixes });
     return {
-      content: [{ type: "text", text: result }],
+      content: [{ type: "text" as const, text: result }],
     };
-  },
-  TOOL_ANNOTATIONS.readOnly
+  }
 );
 
 // ─── Tool: Export Tokens ──────────────────────────────────────────────────────
@@ -241,10 +235,9 @@ server.tool(
     logger.info({ tool: "export_tokens", targetFormat });
     const result = await exportTokens({ tokens, targetFormat, prefix });
     return {
-      content: [{ type: "text", text: result }],
+      content: [{ type: "text" as const, text: result }],
     };
-  },
-  TOOL_ANNOTATIONS.readOnly
+  }
 );
 
 // ─── Tool: Generate Complete Theme ────────────────────────────────────────────
@@ -265,38 +258,9 @@ server.tool(
     logger.info({ tool: "generate_theme", description: description.slice(0, 80) });
     const result = await generateTheme({ description, format, includeComponentTokens });
     return {
-      content: [{ type: "text", text: result }],
+      content: [{ type: "text" as const, text: result }],
     };
-  },
-  TOOL_ANNOTATIONS.readOnly
-);
-
-// ─── Resources ────────────────────────────────────────────────────────────────
-
-server.resource(
-  "design-system-guide",
-  "designmcp://guide",
-  { mimeType: "text/markdown" },
-  async () => ({
-    contents: [{
-      uri: "designmcp://guide",
-      mimeType: "text/markdown",
-      text: SERVER_INFO.guide,
-    }],
-  })
-);
-
-server.resource(
-  "token-naming-conventions",
-  "designmcp://conventions",
-  { mimeType: "text/markdown" },
-  async () => ({
-    contents: [{
-      uri: "designmcp://conventions",
-      mimeType: "text/markdown",
-      text: SERVER_INFO.conventions,
-    }],
-  })
+  }
 );
 
 // ─── Start ────────────────────────────────────────────────────────────────────
