@@ -1,0 +1,27 @@
+{
+  "name": "@designmcp/server",
+  "version": "1.0.0",
+  "description": "DesignMCP — Brand Intelligence & Design Token Server",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "designmcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.8.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
