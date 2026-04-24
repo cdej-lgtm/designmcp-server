@@ -22,11 +22,7 @@ import { exportTokens } from "./tools/exportTokens.js";
 import { checkAccessibility } from "./tools/accessibility.js";
 import { generateTheme } from "./tools/themeGenerator.js";
 import { SERVER_INFO, TOOL_ANNOTATIONS } from "./lib/constants.js";
-
-const logger = {
-  info: (data: Record<string, unknown> | string) => console.error("[info]", JSON.stringify(data)),
-  error: (data: Record<string, unknown> | string, msg?: string) => console.error("[error]", msg ?? "", JSON.stringify(data)),
-};
+import { logger } from "./lib/logger.js";
 
 // ─── Server Bootstrap ─────────────────────────────────────────────────────────
 
