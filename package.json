@@ -1,7 +1,7 @@
 {
   "name": "@designmcp/server",
-  "version": "1.0.0",
-  "description": "DesignMCP — Brand Intelligence & Design Token Server",
+  "version": "2.1.0",
+  "description": "DesignMCP — AI-powered Brand Intelligence & Design Token Server",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
@@ -13,6 +13,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
     "@modelcontextprotocol/sdk": "^1.8.0",
     "zod": "^3.23.8"
   },
@@ -23,5 +24,10 @@
   },
   "engines": {
     "node": ">=20.0.0"
-  }
+  },
+  "keywords": [
+    "mcp", "design-system", "design-tokens", "color-palette", "tailwind",
+    "brand", "oklch", "figma", "css", "typography", "ai", "claude"
+  ],
+  "license": "MIT"
 }

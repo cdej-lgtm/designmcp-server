@@ -4,6 +4,11 @@ import {
   tokensToCSS, colorScaleToTailwind, rgbToOklch, oklchToRgb,
   generateComplementary,
 } from "../lib/colors.js";
+import {
+  analyzeThemeWithAI,
+  generateBrandIdentityWithAI,
+  explainPaletteWithAI,
+} from "../lib/ai.js";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1241,13 +1246,22 @@ function inferPersonality(description: string): { color: string; personality: Th
 }
 
 export async function generateTheme({ description, format, includeComponentTokens }: GenerateThemeArgs): Promise<string> {
-  const { color, personality } = inferPersonality(description);
-  const brandName = description.split(" ").slice(0, 2).join("-").toLowerCase().replace(/[^a-z-]/g, "");
+  // ── Try AI-powered personality inference first (Pro+AI tier users) ──────────
+  const aiParams = await analyzeThemeWithAI(description);
 
-  const header = `# Generated Theme\n**Prompt:** "${description}"\n**Inferred personality:** \`${personality}\` | **Base color:** \`${color}\`\n\n---\n`;
+  const color       = aiParams?.primaryColor     ?? inferPersonality(description).color;
+  const personality = (aiParams?.personality     ?? inferPersonality(description).personality) as ThemePersonality;
+  const brandName   = description.split(" ").slice(0, 2).join("-").toLowerCase().replace(/[^a-z-]/g, "");
+
+  const aiNote = aiParams
+    ? `**AI analysis:** ${aiParams.colorRationale}\n> *${aiParams.designDirection}*`
+    : `**Inferred personality:** \`${personality}\` | **Base color:** \`${color}\``;
+
+  const header = `# Generated Theme\n**Prompt:** "${description}"\n${aiNote}\n\n---\n`;
 
   const tokenSystem = await generateDesignTokens({
     brandColor: color, brandName, personality,
+    secondaryColor: aiParams?.secondaryColor,
     includeMotion: true, format,
   });
 
@@ -1260,5 +1274,34 @@ export async function generateTheme({ description, format, includeComponentToken
     });
   }
 
-  return header + tokenSystem + componentSection;
+  // ── Optionally add AI color rationale ──────────────────────────────────────
+  let colorStory = "";
+  if (!aiParams) {
+    // Only call explainPalette when AI wasn't already used above (avoid double-billing)
+    const story = await explainPaletteWithAI(color, description);
+    if (story) colorStory = `\n\n---\n\n## Color Rationale\n\n${story}`;
+  }
+
+  return header + tokenSystem + componentSection + colorStory;
+}
+
+// ────────────────────────────────────────────────────────
+// generateBrandIdentity — AI-powered brand strategy doc [AI tier]
+// ────────────────────────────────────────────────────────
+
+interface GenerateBrandIdentityArgs {
+  brandName: string;
+  description: string;
+}
+
+/**
+ * Calls Claude to produce a comprehensive 7-section brand identity document:
+ * positioning, personality, visual direction, color strategy, typography,
+ * design principles, and brand voice — in under 30 seconds.
+ *
+ * This is DesignMCP's highest-value output. Replaces 4–8 hours of brand
+ * strategy work with a single tool call.
+ */
+export async function generateBrandIdentity({ brandName, description }: GenerateBrandIdentityArgs): Promise<string> {
+  return generateBrandIdentityWithAI(brandName, description);
 }
