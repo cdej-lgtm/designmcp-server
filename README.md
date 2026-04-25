@@ -1,27 +1,28 @@
-# DesignMCP — Brand Intelligence & Design Token Server
+# DesignMCP — Design System & Brand Intelligence MCP Server
 
-> Give any LLM the design expertise of a senior design systems engineer and brand strategist.
+> **The** MCP server for design. shadcn/ui theming, OKLCH color science, AI brand strategy — directly inside Claude, Cursor, and Windsurf.
 
-**14 tools** across three tiers. From a one-line color input to a complete, production-ready design system in seconds.
+**15 tools** · **3 tiers** · Zero design background required.
 
 [![npm version](https://img.shields.io/npm/v/@designmcp/server)](https://www.npmjs.com/package/@designmcp/server)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![MCP Compatible](https://img.shields.io/badge/MCP-Compatible-blue)](https://modelcontextprotocol.io)
 
 ---
 
-## What DesignMCP does
+## The problem this solves
 
-Instead of an LLM giving you generic hex codes and hoping for the best, DesignMCP gives it:
+Every developer building a product needs a design system. The options are:
 
-- **OKLCH color science** — the same perceptual color engine used by Radix UI, shadcn/ui, and Tailwind v3/v4. Colors that actually look right across the full scale.
-- **Real font pairings** — 7 personality profiles mapped to specific Google Fonts (Playfair Display, Cormorant Garamond, Outfit, etc.) with modular type scales.
-- **Contrast-aware accessibility** — every generated palette is checked against WCAG 2.1 AA/AAA. Failing colors are auto-corrected.
-- **Live URL analysis** — extract and reverse-engineer colors and fonts from any website's CSS.
-- **AI brand strategy** — Claude generates a 7-section brand identity document: positioning, personality, color psychology, typography rationale, design principles, and brand voice.
+- **Hire a designer** → $2,000–$20,000 minimum for a basic brand identity
+- **Do it yourself** → 8–20 hours of color theory, typography research, token naming, dark mode math
+- **Use DesignMCP** → One tool call. Production-ready output.
+
+DesignMCP gives any LLM the expertise of a senior design systems engineer and brand strategist. You describe what you're building; it outputs production-ready CSS, Tailwind config, and design tokens — with the color science, font pairings, and WCAG compliance already done.
 
 ---
 
-## Quick start (free)
+## Quick start (free — no key required)
 
 ```json
 {
@@ -34,41 +35,45 @@ Instead of an LLM giving you generic hex codes and hoping for the best, DesignMC
 }
 ```
 
-6 free tools are available with no API key required. Try:
+Try it immediately:
 
-> *"Generate a color palette for #6366f1 with dark mode"*
-> *"Audit these brand colors: #0ea5e9, #ffffff, #0f172a"*
-> *"What typography system fits a luxury editorial brand?"*
-
----
-
-## Tier breakdown
-
-| Tool | Free | Pro | AI |
-|------|:----:|:---:|:--:|
-| `generate_color_palette` — 11-step OKLCH scale + dark mode | ✅ | ✅ | ✅ |
-| `generate_typography_system` — Google Fonts + modular scale | ✅ | ✅ | ✅ |
-| `generate_shadow_system` — 4 shadow styles, light + dark | ✅ | ✅ | ✅ |
-| `generate_spacing_scale` — Tailwind-grade spacing tokens | ✅ | ✅ | ✅ |
-| `check_accessibility` — WCAG AA/AAA with auto-fix suggestions | ✅ | ✅ | ✅ |
-| `generate_color_harmony` — 6 harmony types, full OKLCH scales | ✅ | ✅ | ✅ |
-| `audit_brand_colors` — contrast matrix + harmony + suggestions | ✅ | ✅ | ✅ |
-| `generate_design_tokens` — complete token system in one call | 🔒 | ✅ | ✅ |
-| `generate_component_tokens` — 12 UI components, all states | 🔒 | ✅ | ✅ |
-| `export_tokens` — CSS, SCSS, Tailwind v3/v4, Swift, Kotlin | 🔒 | ✅ | ✅ |
-| `analyze_brand_url` — live CSS color + font extraction | 🔒 | ✅ | ✅ |
-| `generate_theme` — one-shot full design system from description | 🔒 | ✅ | ✅ |
-| `generate_design_system_file` — 3 copy-paste files: CSS + Tailwind + TS | 🔒 | ✅ | ✅ |
-| `generate_brand_identity` — **AI brand strategy doc** (7 sections) | 🔒 | 🔒 | ✅ |
-
-**Free** — no configuration needed  
-**Pro** — add `DESIGNMCP_KEY=dmcp_<your-key>` · [Get key →](https://designmcp.dev)  
-**AI** — add `DESIGNMCP_KEY` + `ANTHROPIC_API_KEY` · [Get key →](https://designmcp.dev)
+> *"Generate a shadcn/ui theme for my brand color #6366f1"*
+> *"Create a color palette for a luxury skincare brand, warm gold tones"*
+> *"Audit these colors for WCAG compliance: #4f46e5, #ffffff, #0f172a"*
+> *"What typography system fits a fintech product?"*
 
 ---
 
-## Pro setup
+## Pricing
 
+| | Free | Pro | Agency |
+|--|:----:|:---:|:------:|
+| Price | $0 | **$29/mo** | **$99/mo** |
+| Annual | — | $290/yr | $990/yr |
+| Seats | 1 | 1 | Up to 5 |
+| `generate_shadcn_theme` | ✅ | ✅ | ✅ |
+| `generate_color_palette` | ✅ | ✅ | ✅ |
+| `generate_typography_system` | ✅ | ✅ | ✅ |
+| `generate_shadow_system` | ✅ | ✅ | ✅ |
+| `generate_spacing_scale` | ✅ | ✅ | ✅ |
+| `check_accessibility` | ✅ | ✅ | ✅ |
+| `generate_color_harmony` | ✅ | ✅ | ✅ |
+| `audit_brand_colors` | ✅ | ✅ | ✅ |
+| `generate_design_tokens` (full system) | 🔒 | ✅ | ✅ |
+| `generate_component_tokens` (12 components) | 🔒 | ✅ | ✅ |
+| `export_tokens` (CSS/SCSS/Swift/Kotlin/DTCG/Figma) | 🔒 | ✅ | ✅ |
+| `analyze_brand_url` (live CSS extraction) | 🔒 | ✅ | ✅ |
+| `generate_theme` (one-shot full system) | 🔒 | ✅ | ✅ |
+| `generate_design_system_file` (4 files) | 🔒 | ✅ | ✅ |
+| `generate_brand_identity` (AI brand strategy) | 🔒 | 🔒 | ✅ |
+
+👉 **[Get your key at designmcp.dev](https://designmcp.dev)** — 7-day free trial on Pro and Agency
+
+---
+
+## Setup
+
+### Pro
 ```json
 {
   "mcpServers": {
@@ -83,10 +88,7 @@ Instead of an LLM giving you generic hex codes and hoping for the best, DesignMC
 }
 ```
 
----
-
-## AI tier setup
-
+### Agency (AI-powered brand strategy)
 ```json
 {
   "mcpServers": {
@@ -95,64 +97,75 @@ Instead of an LLM giving you generic hex codes and hoping for the best, DesignMC
       "args": ["-y", "@designmcp/server"],
       "env": {
         "DESIGNMCP_KEY": "dmcp_your_key_here",
-        "ANTHROPIC_API_KEY": "sk-ant-your_anthropic_key"
+        "ANTHROPIC_API_KEY": "sk-ant-your_key"
       }
     }
   }
 }
 ```
 
-With both keys, `generate_theme` automatically uses Claude to choose colors and personality with proper design rationale instead of keyword matching — and you unlock `generate_brand_identity`.
-
 ---
 
 ## Tool reference
 
-### `generate_brand_identity` ✦ AI tier
+### `generate_shadcn_theme` ✦ Free · Most popular
 
-The highest-value tool in DesignMCP. Replaces 4–8 hours of brand strategy work.
+The fastest way to brand a shadcn/ui project. One call produces a complete `globals.css` with every shadcn CSS variable (`--primary`, `--secondary`, `--muted`, `--accent`, `--destructive`, `--border`, `--input`, `--ring`, `--background`, `--foreground`, 5 chart colors, radius scale) in **OKLCH format**, with light AND dark mode, fully compatible with **Tailwind CSS v4** (`@theme inline` block included) and Tailwind v3 (fallback provided).
 
-**Input:**
+```
+brandColor: "#6366f1"
+radius: 0.625
+```
+
+Drop the output into `src/app/globals.css` and every shadcn/ui component immediately uses your brand color.
+
+**Why OKLCH?** shadcn/ui migrated to OKLCH in Tailwind v4. HSL values cause perceptual inconsistencies — a color at 50% HSL lightness does not look 50% as bright to the human eye. OKLCH is perceptually uniform, which is why Radix UI, shadcn/ui, and Tailwind v4 all use it.
+
+---
+
+### `generate_brand_identity` ✦ Agency tier
+
+Replaces 4–8 hours of brand strategy work. Uses Claude to generate a comprehensive, immediately-actionable document:
+
 ```
 brandName: "Helix"
-description: "A B2B SaaS platform for construction project managers.
-  Enterprise deals, $50k+ ACV. Audience: skeptical ops directors
-  who hate change and trust hard numbers over aesthetics."
+description: "B2B SaaS for construction ops directors. Enterprise deals,
+  $50k+ ACV. Skeptical audience that trusts hard numbers, not aesthetics."
 ```
 
-**Output** (7 sections):
-1. **Brand Positioning** — one-sentence statement, target audience, 3 differentiators, brand promise
+**Output (7 sections):**
+1. **Brand Positioning** — one-sentence statement, specific target audience, 3 differentiators, brand promise
 2. **Brand Personality** — 5 named traits, brand archetype, 3 "we are / we are not" tone pairs
-3. **Visual Direction** — 2-sentence aesthetic, 3 specific visual references, what to avoid
-4. **Color Strategy** — primary/secondary hex with color psychology rationale
-5. **Typography Strategy** — specific Google Fonts with hierarchy and spacing philosophy
+3. **Visual Direction** — 2-sentence aesthetic, 3 real visual references, what to avoid
+4. **Color Strategy** — primary + secondary hex with color psychology rationale for this specific brand
+5. **Typography Strategy** — specific Google Fonts, hierarchy guidance, letter-spacing philosophy
 6. **Design Principles** — 3–5 named principles with concrete application examples
 7. **Brand Voice** — 3 taglines, do/don't word lists, sample CTA microcopy
 
 ---
 
-### `generate_theme` ✦ Pro tier (AI-enhanced)
+### `generate_theme` ✦ Pro (AI-enhanced on Agency)
 
-One-shot full design system from a natural language description.
+One-shot full design system from a natural language description. Returns OKLCH color scale, secondary color, Google Fonts, spacing, shadows, motion tokens, border radius, and component tokens in a single response.
 
 ```
-description: "A fintech app for Gen Z investors. Mobile-first,
-  casual but trustworthy. Competes with Robinhood."
+description: "A fintech app for Gen Z investors. Mobile-first, casual but trustworthy."
 ```
 
-Returns: OKLCH color scale, secondary color, Google Fonts, spacing, shadows, motion tokens, border radius, and component tokens in a single response.
-
-When `ANTHROPIC_API_KEY` is set, Claude picks the exact colors and personality with full design rationale instead of using keyword matching.
+On Agency tier, Claude picks the colors with design rationale instead of keyword matching.
 
 ---
 
-### `generate_design_system_file` ✦ Pro tier
+### `generate_design_system_file` ✦ Pro
 
-Generates three complete copy-paste files:
+Four production-ready files:
 
-- **`tokens.css`** — every token as CSS custom properties (colors, dark mode, typography, spacing, shadows, motion, border radius)
-- **`tailwind.config.ts`** — full Tailwind v3 config wired to those tokens
-- **`tokens.ts`** — typed TypeScript constants for React/Vue/Svelte
+| File | Purpose |
+|------|---------|
+| `globals.css` | Tailwind v4 + shadcn/ui — drop into Next.js/Vite/Astro |
+| `tokens.css` | Vanilla CSS tokens for Tailwind v3 projects |
+| `tailwind.config.ts` | Complete Tailwind v3 config |
+| `tokens.ts` | Typed TypeScript constants for React/Vue/Svelte |
 
 ```
 brandColor: "#6366f1"
@@ -160,85 +173,115 @@ brandName: "Helix"
 personality: "startup"
 ```
 
-Drop all three files in and the design system is live.
+---
+
+### `export_tokens` ✦ Pro
+
+Convert any token set to any platform format:
+
+| Format | Use case |
+|--------|---------|
+| `css` | CSS custom properties |
+| `scss` | SCSS variables |
+| `tailwind-v3` | `module.exports` config |
+| `tailwind-v4` | `@theme {}` block |
+| `dtcg` | W3C Design Tokens (Tokens Studio, Style Dictionary 4) |
+| `figma-variables` | Figma Variables panel import JSON |
+| `swift` | SwiftUI Color extensions |
+| `kotlin` | Jetpack Compose Color objects |
 
 ---
 
-### `analyze_brand_url` ✦ Pro tier
+### `analyze_brand_url` ✦ Pro
 
-Fetches any live website and extracts its brand colors and fonts from inline styles, `<style>` tags, and linked stylesheets. Clusters chromatic colors by OKLCH hue proximity to identify primary, secondary, and accent roles.
+Fetch any live website and extract its brand colors and fonts from CSS. Clusters chromatic colors by OKLCH hue to identify primary, secondary, and accent roles. Returns ready-to-use design tokens.
 
 ```
 url: "https://stripe.com"
 outputFormat: "both"
 ```
 
-Returns detected palette + generated design tokens ready for immediate use.
-
 ---
 
 ### `check_accessibility` ✦ Free
 
-```
-pairs: [
-  { foreground: "#6366f1", background: "#ffffff", label: "CTA on white" },
-  { foreground: "#ffffff", background: "#4f46e5", label: "White on brand" }
-]
-level: "AA"
-suggestFixes: true
-```
-
-Returns exact contrast ratios, AA/AAA/AA-Large pass/fail, and direction-aware OKLCH color fixes for anything that fails.
+WCAG 2.1 AA/AAA contrast checking with auto-fix suggestions. When a pair fails, it finds the nearest passing color using direction-aware OKLCH adjustment (darkens on light backgrounds, lightens on dark).
 
 ---
 
 ### `audit_brand_colors` ✦ Free
 
-```
-colors: ["#6366f1", "#f59e0b", "#ffffff", "#0f172a"]
-brandName: "Acme"
-```
-
-Full contrast matrix, harmony classification, accessibility score, and improvement suggestions.
+Design audit for any set of brand colors: full contrast matrix (AA/AAA/AA-Large), harmony classification from OKLCH hue distances, accessibility score, and specific suggestions.
 
 ---
 
 ### `generate_color_harmony` ✦ Free
 
-6 harmony types from a single base color using OKLCH hue rotation:
-
-| Type | Colors | Character |
-|------|--------|-----------|
-| `complementary` | 2 | Maximum contrast |
-| `analogous` | 3 | Natural cohesion |
-| `triadic` | 3 | Vibrant balance |
-| `split-complementary` | 3 | Softer tension |
-| `tetradic` | 4 | Rich variety |
-| `monochromatic` | 5 | Single hue, 5 lightness stops |
-
-Each color includes its full 11-step OKLCH scale.
+6 harmony types from one base color using OKLCH hue rotation. Each color comes with its full 11-step scale.
 
 ---
 
-## Why OKLCH?
+## What makes this different
 
-Most design token tools use HSL or HSB. These color spaces are not perceptually uniform — two colors at the same "lightness" in HSL can look dramatically different in brightness. OKLCH (from Björn Ottosson's OKLab) solves this: equal steps in OKLCH look equal to the human eye.
+| Feature | DesignMCP | Other design MCPs |
+|---------|:---------:|:-----------------:|
+| Monetized / actively maintained | ✅ | ❌ Most are abandoned free repos |
+| OKLCH color science | ✅ | ❌ HSL or no math |
+| shadcn/ui + Tailwind v4 native | ✅ | ❌ |
+| W3C DTCG export | ✅ | ❌ |
+| Figma Variables export | ✅ | ❌ |
+| AI brand identity (Claude-powered) | ✅ | ❌ |
+| WCAG auto-fix suggestions | ✅ | ❌ |
+| Live URL brand extraction | ✅ | Partially |
+| Multi-platform (Swift, Kotlin) | ✅ | ❌ |
 
-This is why Radix UI, shadcn/ui, and Tailwind's new color system all use OKLCH or a perceptual approximation. DesignMCP brings this directly to LLM-assisted workflows.
+---
+
+## Who uses DesignMCP
+
+**Solo developers / indie hackers** — You're building a product, you have no designer, and you don't want to spend two days on color theory. DesignMCP produces the same quality output a senior designer would in a fraction of the time.
+
+**Freelancers** — A client needs a design system delivered with their rebrand. `generate_design_system_file` produces four files you'd normally spend a day on. More projects, same time.
+
+**Agencies** — `generate_brand_identity` (Agency tier) produces a complete brand strategy document you can use as a starting point or deliver directly. Agencies charge $5k–$50k for this work. At $99/month, the ROI on a single project is 50–500x.
+
+**Design engineers** — You know what you want, you just need the math done: color scales, contrast ratios, OKLCH conversions, DTCG export. DesignMCP is your calculator.
 
 ---
 
 ## Works with
 
-- **Claude Desktop** (claude.ai/download)
-- **Cursor** (MCP settings)
-- **Windsurf** (MCP config)
-- **Continue.dev**
+- **Claude Desktop** — [download](https://claude.ai/download) → Settings → MCP
+- **Claude Code** — `claude mcp add designmcp -- npx -y @designmcp/server`
+- **Cursor** — Settings → MCP → add server
+- **Windsurf** — MCP settings → add configuration
+- **Continue.dev** — `config.json` mcpServers block
 - Any MCP-compatible client
+
+---
+
+## Distribution & listing
+
+DesignMCP is listed on:
+- [MCPize](https://mcpize.com) — search "DesignMCP"
+- [MCP.so](https://mcp.so) — browse Design category
+- [awesome-mcp-servers](https://github.com/wong2/awesome-mcp-servers) — Design section
+- [Cline Marketplace](https://cline.bot) — search "design system"
+- [PulseMCP](https://pulsemcp.com) — design tools
+
+---
+
+## Tech notes
+
+**Why OKLCH over HSL?** The human eye doesn't perceive HSL lightness linearly. Two colors with the same HSL lightness value can look dramatically different in perceived brightness. OKLCH (from Björn Ottosson's OKLab) is perceptually uniform — equal steps look equal. This is why Radix UI, shadcn/ui, and Tailwind v4 all use it. DesignMCP implements the full sRGB → linear sRGB → OKLab → OKLCH pipeline from scratch.
+
+**W3C DTCG format** — The [Design Tokens Community Group](https://tr.designtokens.org/format/) specification is the emerging standard for sharing design tokens between tools. DesignMCP's `dtcg` export format is compatible with Tokens Studio for Figma and Style Dictionary 4.
+
+**Prompt caching** — AI tool calls (brand identity, AI-enhanced theme) use Anthropic's prompt caching on the system prompt to minimize latency and cost on repeated calls.
 
 ---
 
 ## License
 
 MIT — free to use, modify, and distribute.  
-Commercial support and managed hosting available at [designmcp.dev](https://designmcp.dev).
+Commercial support, team licenses, and white-label options: [designmcp.dev](https://designmcp.dev)

@@ -684,6 +684,55 @@ export async function exportTokens({ tokens, targetFormat, prefix }: ExportToken
       for (const [k, v] of Object.entries(flat)) sdTokens[k] = { value: v };
       return `## Style Dictionary\n\n\`\`\`json\n${JSON.stringify(sdTokens, null, 2)}\n\`\`\``;
     }
+    case "dtcg": {
+      // W3C Design Tokens Community Group format (https://tr.designtokens.org/format/)
+      function inferDTCGType(value: string): string {
+        if (/^#[0-9a-f]{3,8}$/i.test(value) || value.startsWith("oklch") || value.startsWith("rgb")) return "color";
+        if (value.endsWith("rem") || value.endsWith("px") || value.endsWith("em")) return "dimension";
+        if (value.match(/^\d+(\.\d+)?(ms|s)$/)) return "duration";
+        if (value.startsWith("cubic-bezier") || value === "linear") return "cubicBezier";
+        if (value.match(/^\d+(\.\d+)?$/) && !value.includes(" ")) return "number";
+        if (value.includes(",") || value.includes("px") && value.split(" ").length > 1) return "shadow";
+        return "other";
+      }
+      // Build nested DTCG structure from flat tokens
+      const dtcg: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(flat)) {
+        const parts = k.split("-");
+        let node: Record<string, unknown> = dtcg;
+        for (let i = 0; i < parts.length - 1; i++) {
+          if (!node[parts[i]]) node[parts[i]] = {};
+          node = node[parts[i]] as Record<string, unknown>;
+        }
+        node[parts[parts.length - 1]] = { $value: v, $type: inferDTCGType(v) };
+      }
+      return `## W3C DTCG Format\n\n> Compatible with Tokens Studio, Style Dictionary 4, and any W3C-compliant tool.\n\n\`\`\`json\n${JSON.stringify(dtcg, null, 2)}\n\`\`\``;
+    }
+    case "figma-variables": {
+      // Figma Variables JSON import format
+      const colorEntries = Object.entries(flat).filter(([, v]) =>
+        /^#[0-9a-f]{6}$/i.test(v)
+      );
+      function hexToFigmaRgb(hex: string) {
+        const r = parseInt(hex.slice(1, 3), 16) / 255;
+        const g = parseInt(hex.slice(3, 5), 16) / 255;
+        const b = parseInt(hex.slice(5, 7), 16) / 255;
+        return { r: +r.toFixed(4), g: +g.toFixed(4), b: +b.toFixed(4), a: 1 };
+      }
+      const collection = {
+        name: prefix ?? "Design Tokens",
+        modes: [{
+          name: "Default",
+          variables: colorEntries.map(([k, v]) => ({
+            name: k.replace(/-/g, "/"),
+            resolvedType: "COLOR",
+            value: hexToFigmaRgb(v),
+          })),
+        }],
+      };
+      const figmaJson = { collections: [collection] };
+      return `## Figma Variables Import\n\n> Go to Figma → Variables panel → Import → paste this JSON.\n\n\`\`\`json\n${JSON.stringify(figmaJson, null, 2)}\n\`\`\``;
+    }
     default:
       return `## Flat JSON\n\n\`\`\`json\n${JSON.stringify(flat, null, 2)}\n\`\`\``;
   }
@@ -1201,16 +1250,317 @@ export const tokens = {
 
 export type Tokens = typeof tokens`;
 
+  // ── globals.css (Tailwind v4 + shadcn/ui compatible) ──
+  const { L: pL, C: pC, H: pH } = rgbToOklch(baseRgb);
+  const safeC   = Math.min(pC, 0.28);
+  const fmt = (l: number, c: number, h: number) =>
+    `oklch(${l.toFixed(3)} ${c.toFixed(3)} ${h.toFixed(1)})`;
+  const darkPL  = Math.max(Math.min(pL < 0.50 ? pL + 0.35 : pL + 0.15, 0.88), 0.55);
+  const semKeys = [
+    "background","foreground","card","card-foreground","popover","popover-foreground",
+    "primary","primary-foreground","secondary","secondary-foreground","muted",
+    "muted-foreground","accent","accent-foreground","destructive","border","input",
+    "ring","chart-1","chart-2","chart-3","chart-4","chart-5",
+  ];
+  const lightShadcn = [
+    `  --background: oklch(1 0 0);`,
+    `  --foreground: oklch(0.145 0 0);`,
+    `  --card: oklch(1 0 0);`,
+    `  --card-foreground: oklch(0.145 0 0);`,
+    `  --popover: oklch(1 0 0);`,
+    `  --popover-foreground: oklch(0.145 0 0);`,
+    `  --primary: ${fmt(pL, safeC, pH)};`,
+    `  --primary-foreground: ${pL > 0.60 ? "oklch(0.145 0 0)" : "oklch(0.985 0 0)"};`,
+    `  --secondary: oklch(0.961 0 0);`,
+    `  --secondary-foreground: oklch(0.205 0 0);`,
+    `  --muted: oklch(0.961 0 0);`,
+    `  --muted-foreground: oklch(0.556 0 0);`,
+    `  --accent: ${fmt(0.961, safeC * 0.15, (pH + 30) % 360)};`,
+    `  --accent-foreground: oklch(0.205 0 0);`,
+    `  --destructive: oklch(0.577 0.245 27.3);`,
+    `  --border: oklch(0.922 0 0);`,
+    `  --input: oklch(0.922 0 0);`,
+    `  --ring: ${fmt(pL * 0.90, safeC * 0.55, pH)};`,
+    `  --radius: 0.625rem;`,
+    `  --chart-1: ${fmt(0.646, Math.min(safeC, 0.222), pH)};`,
+    `  --chart-2: ${fmt(0.600, Math.min(safeC * 0.77, 0.118), (pH + 60) % 360)};`,
+    `  --chart-3: ${fmt(0.398, Math.min(safeC * 0.45, 0.070), (pH + 120) % 360)};`,
+    `  --chart-4: ${fmt(0.828, Math.min(safeC * 0.85, 0.189), (pH + 180) % 360)};`,
+    `  --chart-5: ${fmt(0.769, Math.min(safeC * 0.85, 0.188), (pH + 240) % 360)};`,
+  ].join("\n");
+  const darkShadcn = [
+    `  --background: oklch(0.145 0 0);`,
+    `  --foreground: oklch(0.985 0 0);`,
+    `  --card: oklch(0.205 0 0);`,
+    `  --card-foreground: oklch(0.985 0 0);`,
+    `  --popover: oklch(0.205 0 0);`,
+    `  --popover-foreground: oklch(0.985 0 0);`,
+    `  --primary: ${fmt(darkPL, safeC, pH)};`,
+    `  --primary-foreground: ${darkPL > 0.60 ? "oklch(0.145 0 0)" : "oklch(0.985 0 0)"};`,
+    `  --secondary: oklch(0.269 0 0);`,
+    `  --secondary-foreground: oklch(0.985 0 0);`,
+    `  --muted: oklch(0.269 0 0);`,
+    `  --muted-foreground: oklch(0.708 0 0);`,
+    `  --accent: ${fmt(0.269, safeC * 0.15, (pH + 30) % 360)};`,
+    `  --accent-foreground: oklch(0.985 0 0);`,
+    `  --destructive: oklch(0.704 0.191 22.2);`,
+    `  --border: oklch(1 0 0 / 10%);`,
+    `  --input: oklch(1 0 0 / 15%);`,
+    `  --ring: ${fmt(Math.min(darkPL + 0.08, 0.96), safeC * 0.45, pH)};`,
+    `  --chart-1: ${fmt(0.488, Math.min(safeC, 0.243), pH)};`,
+    `  --chart-2: ${fmt(0.696, Math.min(safeC * 0.77, 0.170), (pH + 60) % 360)};`,
+    `  --chart-3: ${fmt(0.769, Math.min(safeC * 0.85, 0.188), (pH + 120) % 360)};`,
+    `  --chart-4: ${fmt(0.627, Math.min(safeC, 0.265), (pH + 180) % 360)};`,
+    `  --chart-5: ${fmt(0.645, Math.min(safeC, 0.246), (pH + 240) % 360)};`,
+  ].join("\n");
+  const themeInlineBlock = semKeys.map(k => `  --color-${k}: var(--${k});`).join("\n") +
+    "\n  --radius-sm: calc(var(--radius) - 4px);\n" +
+    "  --radius-md: calc(var(--radius) - 2px);\n" +
+    "  --radius-lg: var(--radius);\n" +
+    "  --radius-xl: calc(var(--radius) + 4px);";
+
+  const globalsCssTailwindV4 =
+`/* ════════════════════════════════════════════════════════
+   ${brandName} · globals.css (Tailwind v4 + shadcn/ui)
+   Generated by DesignMCP · designmcp.dev
+   ════════════════════════════════════════════════════════ */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+@import url('https://fonts.googleapis.com/css2?family=${[fonts.display, fonts.body]
+    .filter((f, i, a) => a.indexOf(f) === i)
+    .map(f => f.replace(/ /g, "+") + ":wght@300;400;500;600;700")
+    .join("&family=")}&display=swap');
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+${lightShadcn}
+
+  /* Typography */
+  --font-display: '${fonts.display}', system-ui, sans-serif;
+  --font-body:    '${fonts.body}', system-ui, sans-serif;
+  --font-mono:    '${fonts.mono}', 'Fira Code', monospace;
+}
+
+.dark {
+${darkShadcn}
+}
+
+@theme inline {
+${themeInlineBlock}
+  --font-sans:    var(--font-body);
+  --font-display: var(--font-display);
+  --font-mono:    var(--font-mono);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}`;
+
   return [
     `# ${brandName} Design System Files`,
     `Primary: \`${brandColor}\` · Secondary: \`${secColor}\` · Personality: \`${personality}\``,
-    "Drop these three files into your project and you're done.",
+    "Four files. Drop them in and the design system is live — works with shadcn/ui, Tailwind v3, and Tailwind v4.",
     "---",
-    "## File 1: `tokens.css`\n\n```css\n" + tokensCss + "\n```",
+    "## File 1: `globals.css` (Tailwind v4 + shadcn/ui)\n\n```css\n" + globalsCssTailwindV4 + "\n```",
     "---",
-    "## File 2: `tailwind.config.ts`\n\n```ts\n" + tailwindConfig + "\n```",
+    "## File 2: `tokens.css` (Tailwind v3 / vanilla CSS)\n\n```css\n" + tokensCss + "\n```",
     "---",
-    "## File 3: `tokens.ts` (TypeScript)\n\n```ts\n" + tsTokens + "\n```",
+    "## File 3: `tailwind.config.ts` (Tailwind v3)\n\n```ts\n" + tailwindConfig + "\n```",
+    "---",
+    "## File 4: `tokens.ts` (TypeScript)\n\n```ts\n" + tsTokens + "\n```",
+  ].join("\n\n");
+}
+
+// ────────────────────────────────────────────────────────
+// generateShadcnTheme — exact shadcn/ui CSS variables [FREE]
+// The most-searched design+dev task: getting shadcn working
+// with a custom brand color in Tailwind v4 OKLCH format.
+// ────────────────────────────────────────────────────────
+
+interface GenerateShadcnThemeArgs {
+  brandColor: string;
+  radius?: number;  // border-radius base in rem, default 0.625
+  accentColor?: string; // optional explicit accent, auto if omitted
+}
+
+export async function generateShadcnTheme({
+  brandColor,
+  radius = 0.625,
+  accentColor,
+}: GenerateShadcnThemeArgs): Promise<string> {
+  const baseRgb = parseColor(brandColor);
+  const { L, C, H } = rgbToOklch(baseRgb);
+  const safeC = Math.min(C, 0.28);
+
+  // Primary foreground: dark text on light/mid colours, white on dark ones
+  const primaryFg = L > 0.60 ? "oklch(0.145 0 0)" : "oklch(0.985 0 0)";
+
+  // For dark mode, lift the primary so it shows on near-black background
+  const darkPrimaryL = Math.max(Math.min(L < 0.50 ? L + 0.35 : L + 0.15, 0.88), 0.55);
+  const darkPrimaryFg = darkPrimaryL > 0.60 ? "oklch(0.145 0 0)" : "oklch(0.985 0 0)";
+
+  // Accent hue: use explicit accentColor or analogous +30°
+  let accentH = (H + 30) % 360;
+  let accentC  = safeC * 0.15;
+  if (accentColor) {
+    const aRgb = parseColor(accentColor);
+    const aOk  = rgbToOklch(aRgb);
+    accentH = aOk.H;
+    accentC = Math.min(aOk.C, 0.28) * 0.15;
+  }
+
+  const fmt = (l: number, c: number, h: number) =>
+    `oklch(${l.toFixed(3)} ${c.toFixed(3)} ${h.toFixed(1)})`;
+
+  const ring = fmt(L * 0.90, safeC * 0.55, H);
+
+  // Light mode
+  const light: Record<string, string> = {
+    "--background":            "oklch(1 0 0)",
+    "--foreground":            "oklch(0.145 0 0)",
+    "--card":                  "oklch(1 0 0)",
+    "--card-foreground":       "oklch(0.145 0 0)",
+    "--popover":               "oklch(1 0 0)",
+    "--popover-foreground":    "oklch(0.145 0 0)",
+    "--primary":               fmt(L, safeC, H),
+    "--primary-foreground":    primaryFg,
+    "--secondary":             "oklch(0.961 0 0)",
+    "--secondary-foreground":  "oklch(0.205 0 0)",
+    "--muted":                 "oklch(0.961 0 0)",
+    "--muted-foreground":      "oklch(0.556 0 0)",
+    "--accent":                fmt(0.961, accentC, accentH),
+    "--accent-foreground":     "oklch(0.205 0 0)",
+    "--destructive":           "oklch(0.577 0.245 27.3)",
+    "--border":                "oklch(0.922 0 0)",
+    "--input":                 "oklch(0.922 0 0)",
+    "--ring":                  ring,
+    "--radius":                `${radius}rem`,
+    "--chart-1":               fmt(0.646, Math.min(safeC, 0.222), H),
+    "--chart-2":               fmt(0.600, Math.min(safeC * 0.77, 0.118), (H + 60) % 360),
+    "--chart-3":               fmt(0.398, Math.min(safeC * 0.45, 0.070), (H + 120) % 360),
+    "--chart-4":               fmt(0.828, Math.min(safeC * 0.85, 0.189), (H + 180) % 360),
+    "--chart-5":               fmt(0.769, Math.min(safeC * 0.85, 0.188), (H + 240) % 360),
+  };
+
+  // Dark mode
+  const darkRing = fmt(Math.min(darkPrimaryL + 0.08, 0.96), safeC * 0.45, H);
+  const dark: Record<string, string> = {
+    "--background":            "oklch(0.145 0 0)",
+    "--foreground":            "oklch(0.985 0 0)",
+    "--card":                  "oklch(0.205 0 0)",
+    "--card-foreground":       "oklch(0.985 0 0)",
+    "--popover":               "oklch(0.205 0 0)",
+    "--popover-foreground":    "oklch(0.985 0 0)",
+    "--primary":               fmt(darkPrimaryL, safeC, H),
+    "--primary-foreground":    darkPrimaryFg,
+    "--secondary":             "oklch(0.269 0 0)",
+    "--secondary-foreground":  "oklch(0.985 0 0)",
+    "--muted":                 "oklch(0.269 0 0)",
+    "--muted-foreground":      "oklch(0.708 0 0)",
+    "--accent":                fmt(0.269, accentC, accentH),
+    "--accent-foreground":     "oklch(0.985 0 0)",
+    "--destructive":           "oklch(0.704 0.191 22.2)",
+    "--border":                "oklch(1 0 0 / 10%)",
+    "--input":                 "oklch(1 0 0 / 15%)",
+    "--ring":                  darkRing,
+    "--chart-1":               fmt(0.488, Math.min(safeC, 0.243), H),
+    "--chart-2":               fmt(0.696, Math.min(safeC * 0.77, 0.170), (H + 60) % 360),
+    "--chart-3":               fmt(0.769, Math.min(safeC * 0.85, 0.188), (H + 120) % 360),
+    "--chart-4":               fmt(0.627, Math.min(safeC, 0.265), (H + 180) % 360),
+    "--chart-5":               fmt(0.645, Math.min(safeC, 0.246), (H + 240) % 360),
+  };
+
+  const entries = (obj: Record<string, string>) =>
+    Object.entries(obj).map(([k, v]) => `  ${k}: ${v};`).join("\n");
+
+  // @theme inline block — maps Tailwind v4 --color-* utilities to the CSS vars
+  const semanticKeys = [
+    "background", "foreground", "card", "card-foreground", "popover",
+    "popover-foreground", "primary", "primary-foreground", "secondary",
+    "secondary-foreground", "muted", "muted-foreground", "accent",
+    "accent-foreground", "destructive", "border", "input", "ring",
+    "chart-1", "chart-2", "chart-3", "chart-4", "chart-5",
+  ];
+  const themeInline = semanticKeys
+    .map(k => `  --color-${k}: var(--${k});`)
+    .join("\n") + "\n" +
+    "  --radius-sm: calc(var(--radius) - 4px);\n" +
+    "  --radius-md: calc(var(--radius) - 2px);\n" +
+    "  --radius-lg: var(--radius);\n" +
+    "  --radius-xl: calc(var(--radius) + 4px);";
+
+  const globalsCss =
+`/* ────────────────────────────────────────────────────────────
+   globals.css — Generated by DesignMCP · designmcp.dev
+   shadcn/ui + Tailwind CSS v4 · Primary: ${brandColor}
+   ──────────────────────────────────────────────────────────── */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+${entries(light)}
+}
+
+.dark {
+${entries(dark)}
+}
+
+@theme inline {
+${themeInline}
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}`;
+
+  // Tailwind v3 equivalent (globals.css for older projects)
+  const lightV3 = Object.entries(light)
+    .filter(([k]) => k !== "--radius")
+    .map(([k, v]) => `    ${k}: ${v};`).join("\n");
+  const darkV3 = Object.entries(dark)
+    .map(([k, v]) => `    ${k}: ${v};`).join("\n");
+
+  const tailwindV3Css =
+`/* globals.css — Tailwind CSS v3 variant */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+${lightV3}
+    --radius: ${radius}rem;
+  }
+  .dark {
+${darkV3}
+  }
+}`;
+
+  return [
+    `## shadcn/ui Theme · \`${brandColor}\``,
+    `Primary: \`${fmt(L, safeC, H)}\` · Radius: \`${radius}rem\` · Includes light + dark mode + 5 chart colors`,
+    "Drop `globals.css` into your project and your shadcn/ui components will use your brand color immediately.",
+    "---",
+    `### \`globals.css\` (Tailwind v4 — recommended)\n\n\`\`\`css\n${globalsCss}\n\`\`\``,
+    "---",
+    `### \`globals.css\` (Tailwind v3)\n\n\`\`\`css\n${tailwindV3Css}\n\`\`\``,
+    "---",
+    `### Quick-start\n\`\`\`bash\n# Install shadcn/ui\nnpx shadcn@latest init\n\n# Replace src/app/globals.css with the file above, then add components:\nnpx shadcn@latest add button card input\n\`\`\``,
   ].join("\n\n");
 }
 

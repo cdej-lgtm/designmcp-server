@@ -1,7 +1,7 @@
 {
   "name": "@designmcp/server",
-  "version": "2.1.0",
-  "description": "DesignMCP — AI-powered Brand Intelligence & Design Token Server",
+  "version": "2.2.0",
+  "description": "DesignMCP — shadcn/ui theming, OKLCH design tokens, AI brand identity. The design system MCP server.",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
@@ -26,8 +26,11 @@
     "node": ">=20.0.0"
   },
   "keywords": [
-    "mcp", "design-system", "design-tokens", "color-palette", "tailwind",
-    "brand", "oklch", "figma", "css", "typography", "ai", "claude"
+    "mcp", "mcp-server", "design-system", "design-tokens", "color-palette",
+    "shadcn", "shadcn-ui", "tailwind", "tailwind-v4", "brand", "oklch",
+    "figma", "figma-variables", "css", "typography", "ai", "claude",
+    "brand-identity", "color-system", "dtcg", "theme-generator",
+    "design-tokens-mcp", "color-tokens", "accessibility", "wcag"
   ],
   "license": "MIT"
 }

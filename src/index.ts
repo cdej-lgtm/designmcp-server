@@ -31,6 +31,7 @@ import {
   auditBrandColors,
   generateDesignSystemFile,
   generateBrandIdentity,
+  generateShadcnTheme,
 } from "./tools/allTools.js";
 import { requirePro, requireAI, getTier } from "./lib/auth.js";
 import { SERVER_INFO } from "./lib/constants.js";
@@ -38,7 +39,7 @@ import { logger } from "./lib/logger.js";
 
 const server = new McpServer({
   name: SERVER_INFO.name,
-  version: "2.1.0",
+  version: "2.2.0",
 });
 
 // ─── 1. Generate Color Palette [FREE] ─────────────────────────────────────────
@@ -208,11 +209,11 @@ server.tool(
 
 server.tool(
   "export_tokens",
-  "PRO · Converts a design token JSON object into any target platform format: CSS custom properties, SCSS variables, Tailwind v3 config (module.exports), Tailwind v4 @theme block, Style Dictionary JSON, Swift Color extensions (SwiftUI), or Kotlin Color objects (Jetpack Compose). Accepts flat or nested token objects. Requires DESIGNMCP_KEY.",
+  "PRO · Converts a design token JSON object into any target platform format: CSS custom properties, SCSS variables, Tailwind v3 config (module.exports), Tailwind v4 @theme block, W3C DTCG format (compatible with Tokens Studio and Style Dictionary 4), Figma Variables import JSON, Swift Color extensions (SwiftUI), or Kotlin Color objects (Jetpack Compose). Accepts flat or nested token objects. Requires DESIGNMCP_KEY.",
   {
-    tokens: z.record(z.any()).describe("Token object — flat key/value or nested (W3C Design Token format)"),
-    targetFormat: z.enum(["css", "scss", "tailwind-v3", "tailwind-v4", "style-dictionary", "swift", "kotlin", "json-flat"])
-      .describe("Target output format"),
+    tokens: z.record(z.any()).describe("Token object — flat key/value or nested"),
+    targetFormat: z.enum(["css", "scss", "tailwind-v3", "tailwind-v4", "dtcg", "figma-variables", "style-dictionary", "swift", "kotlin", "json-flat"])
+      .describe("Target output format. 'dtcg' = W3C Design Tokens Community Group format. 'figma-variables' = importable into Figma Variables panel."),
     prefix: z.string().optional().describe("Variable prefix, e.g. 'app' → --app-color-primary"),
   },
   async ({ tokens, targetFormat, prefix }) => {
@@ -282,7 +283,7 @@ server.tool(
 
 server.tool(
   "generate_design_system_file",
-  "PRO · Generates three complete, copy-paste-ready files for a full design system: (1) tokens.css — a single CSS file with every token: OKLCH color scales, semantic tokens, dark mode, typography, spacing, shadows, motion, and border radius; (2) tailwind.config.ts — a complete Tailwind v3 config wired to those tokens; (3) tokens.ts — a typed TypeScript constants file for use in React/Vue/Svelte. Drop all three files into any project and the design system is live immediately. Requires DESIGNMCP_KEY.",
+  "PRO · Generates four complete, copy-paste-ready files for a production design system: (1) globals.css — Tailwind v4 + shadcn/ui compatible file with OKLCH color variables, @theme inline block, dark mode, Google Fonts, and @layer base reset; (2) tokens.css — vanilla CSS with every token for Tailwind v3 projects; (3) tailwind.config.ts — Tailwind v3 config wired to those tokens; (4) tokens.ts — typed TypeScript constants for React/Vue/Svelte. Drop all four files into any project and the design system is live immediately. Requires DESIGNMCP_KEY.",
   {
     brandColor: z.string().describe("Primary brand color as hex or name"),
     brandName: z.string().describe("Brand/project name, used in file comments and token namespacing"),
@@ -298,7 +299,30 @@ server.tool(
   }
 );
 
-// ─── 14. Generate Brand Identity [AI] ────────────────────────────────────────
+// ─── 14. Generate shadcn/ui Theme [FREE] ─────────────────────────────────────
+
+server.tool(
+  "generate_shadcn_theme",
+  "FREE · Generates a complete shadcn/ui + Tailwind CSS v4 theme from any brand color. Outputs a drop-in globals.css with all shadcn CSS variables (--primary, --secondary, --muted, --accent, --destructive, --border, --input, --ring, --background, --foreground, plus 5 chart colors and border-radius scale) in perceptually-accurate OKLCH format, light AND dark mode, and the @theme inline block that wires them to Tailwind v4 utilities. Also includes a Tailwind v3 fallback. This is the fastest way to brand a shadcn/ui project — one tool call replaces an hour of manual theming work.",
+  {
+    brandColor: z.string().describe(
+      "Your brand's primary color as hex (#6366f1), RGB, or description ('a warm coral'). This becomes --primary in the shadcn theme."
+    ),
+    radius: z.number().optional().describe(
+      "Border radius base in rem. 0 = sharp (brutalist), 0.375 = tight, 0.625 = default shadcn, 1.0 = rounded, 1.5 = pill-heavy. Default: 0.625"
+    ),
+    accentColor: z.string().optional().describe(
+      "Explicit accent color for the --accent variable. Auto-derived as analogous +30° if omitted."
+    ),
+  },
+  async ({ brandColor, radius = 0.625, accentColor }) => {
+    logger.info({ tool: "generate_shadcn_theme", brandColor });
+    const result = await generateShadcnTheme({ brandColor, radius, accentColor });
+    return { content: [{ type: "text" as const, text: result }] };
+  }
+);
+
+// ─── 15. Generate Brand Identity [AI] ────────────────────────────────────────
 
 server.tool(
   "generate_brand_identity",
@@ -322,7 +346,7 @@ server.tool(
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  logger.info(`DesignMCP v2.1.0 running on stdio — 14 tools active (tier: ${getTier()})`);
+  logger.info(`DesignMCP v2.2.0 running on stdio — 15 tools active (tier: ${getTier()})`);
 }
 
 main().catch((err) => {
