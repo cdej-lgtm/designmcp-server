@@ -353,12 +353,10 @@ async function main() {
       await server.connect(transport);
 
       const app = express();
-      app.use(express.json());
+      // NOTE: Do NOT add express.json() — StreamableHTTPServerTransport reads the raw body stream itself
 
-      // MCP endpoint — POST for requests, GET for SSE stream, DELETE for session end
-      app.post("/mcp", (req, res) => { transport.handleRequest(req, res, req.body); });
-      app.get("/mcp",  (req, res) => { transport.handleRequest(req, res); });
-      app.delete("/mcp", (req, res) => { transport.handleRequest(req, res); });
+      // Single catch-all for MCP (POST/GET/DELETE) — no req.body pre-parsing
+      app.all("/mcp", (req, res) => { transport.handleRequest(req, res); });
 
       // Health-check endpoint for MCPize infrastructure probes
       app.get("/health", (_req, res) => { res.json({ status: "ok", version: "2.2.0" }); });
