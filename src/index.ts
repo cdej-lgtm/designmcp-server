@@ -344,12 +344,14 @@ server.tool(
 // ─── Start ────────────────────────────────────────────────────────────────────
 
 async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  logger.info(`DesignMCP v2.2.0 running on stdio — 15 tools active (tier: ${getTier()})`);
+  try {
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    logger.info({ msg: `DesignMCP v2.2.0 running — 14 tools active`, tier: getTier() });
+  } catch (err) {
+    logger.error({ err, msg: "Failed to start DesignMCP server" });
+    process.exit(1);
+  }
 }
 
-main().catch((err) => {
-  logger.error({ err, msg: "Fatal error starting DesignMCP server" });
-  process.exit(1);
-});
+main();
