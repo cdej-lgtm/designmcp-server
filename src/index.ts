@@ -350,6 +350,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  logger.error({ err }, "Fatal error starting DesignMCP server");
+  logger.error({ err, msg: "Fatal error starting DesignMCP server" });
   process.exit(1);
 });

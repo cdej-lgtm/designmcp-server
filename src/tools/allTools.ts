@@ -281,7 +281,7 @@ function buildShadowScale(style: string, brandColor?: string) {
     ? `rgb(${brand.r} ${brand.g} ${brand.b}`
     : "rgb(0 0 0";
 
-  const scales: Record<string, Record<string, string>> = {
+  const scales: Record<string, { light: Record<string, string>; dark: Record<string, string> }> = {
     soft: {
       light: {
         "shadow-xs":    "0 1px 2px 0 rgb(0 0 0 / 0.05)",
