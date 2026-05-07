@@ -1,19 +1,16 @@
-#!/usr/bin/env node
 /**
  * DesignMCP — Brand Intelligence & Design Token Server
- * @version 2.1.0
+ * @version 2.2.0
  * @license MIT
  *
- * Tier model:
- *   Free  — Core color + typography tools (no key needed)
- *   Pro   — Full design system pipeline  (DESIGNMCP_KEY=dmcp_…)
- *   AI    — Brand intelligence via Claude (DESIGNMCP_KEY + ANTHROPIC_API_KEY)
- *
- * Get a key → https://designmcp.dev
+ * Transport: Streamable HTTP when PORT env var is set (MCPize hosting),
+ *            stdio otherwise (local Claude Desktop / npx use)
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import express from "express";
 import { z } from "zod";
 
 import {
@@ -345,9 +342,36 @@ server.tool(
 
 async function main() {
   try {
-    const transport = new StdioServerTransport();
-    await server.connect(transport);
-    logger.info({ msg: `DesignMCP v2.2.0 running — 14 tools active`, tier: getTier() });
+    if (process.env.PORT) {
+      // MCPize / hosted: Streamable HTTP transport via Express
+      const port = parseInt(process.env.PORT, 10);
+
+      const transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: undefined, // stateless — required for scale-to-zero hosting
+      });
+
+      await server.connect(transport);
+
+      const app = express();
+      app.use(express.json());
+
+      // MCP endpoint — POST for requests, GET for SSE stream, DELETE for session end
+      app.post("/mcp", (req, res) => { transport.handleRequest(req, res, req.body); });
+      app.get("/mcp",  (req, res) => { transport.handleRequest(req, res); });
+      app.delete("/mcp", (req, res) => { transport.handleRequest(req, res); });
+
+      // Health-check endpoint for MCPize infrastructure probes
+      app.get("/health", (_req, res) => { res.json({ status: "ok", version: "2.2.0" }); });
+
+      app.listen(port, () => {
+        logger.info({ msg: `DesignMCP v2.2.0 running on HTTP :${port}`, tier: getTier() });
+      });
+    } else {
+      // Local / npx / Claude Desktop: stdio transport
+      const transport = new StdioServerTransport();
+      await server.connect(transport);
+      logger.info({ msg: `DesignMCP v2.2.0 running on stdio`, tier: getTier() });
+    }
   } catch (err) {
     logger.error({ err, msg: "Failed to start DesignMCP server" });
     process.exit(1);

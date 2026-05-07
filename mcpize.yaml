@@ -1,0 +1,18 @@
+version: 1
+name: designmcp
+description: "Brand Intelligence & Design Token Server — OKLCH color engine, AI brand strategy, and professional design system generation for any LLM"
+runtime: typescript
+entry: src/index.ts
+
+build:
+  install: npm ci
+  command: npm run build
+
+startCommand:
+  type: http
+  command: node dist/index.js
+
+secrets:
+  ANTHROPIC_API_KEY:
+    description: "Anthropic API key — enables AI-powered brand identity generation and intelligent theme analysis (AI tier)"
+    required: false
